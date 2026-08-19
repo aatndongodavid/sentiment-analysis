@@ -5,8 +5,8 @@ Le modèle est sauvegardé dans le dossier ./model.
 import os
 from datasets import load_dataset
 from transformers import (
-    DistilBertTokenizer,
     DistilBertForSequenceClassification,
+    DistilBertTokenizer,
     Trainer,
     TrainingArguments,
 )
