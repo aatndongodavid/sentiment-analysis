@@ -11,8 +11,6 @@ import evaluate
 
 
 def test_predict_batch_shape():
-    # Test de la forme de la sortie (sans chargement réel du modèle)
-    # On utilise un faux tokenizer et modèle pour éviter les appels réseau
     class FakeTokenizer:
         def __call__(self, texts, **kwargs):
             import torch
