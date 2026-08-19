@@ -1,7 +1,3 @@
-"""
-Script d'entraînement d'un classifieur de sentiments DistilBERT.
-Le modèle est sauvegardé dans le dossier ./model.
-"""
 import os
 
 from datasets import load_dataset
@@ -17,6 +13,7 @@ MAX_LENGTH = 256
 BATCH_SIZE = 16
 EPOCHS = 2
 SAMPLE_SIZE = 5000  # 5000 exemples pour rester rapide
+
 
 def main():
     # Chargement du dataset IMDB
@@ -34,7 +31,9 @@ def main():
     # Tokenisation
     tokenized_dataset = dataset.map(tokenize_function, batched=True)
     tokenized_dataset = tokenized_dataset.rename_column("label", "labels")
-    tokenized_dataset.set_format("torch", columns=["input_ids", "attention_mask", "labels"])
+    tokenized_dataset.set_format(
+        "torch", columns=["input_ids", "attention_mask", "labels"]
+    )
 
     # Modèle
     model = DistilBertForSequenceClassification.from_pretrained(
@@ -67,6 +66,7 @@ def main():
     model.save_pretrained("model")
     tokenizer.save_pretrained("model")
     print("Modèle entraîné et sauvegardé dans ./model")
+
 
 if __name__ == "__main__":
     main()
