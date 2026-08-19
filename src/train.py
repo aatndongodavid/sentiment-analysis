@@ -3,6 +3,7 @@ Script d'entraînement d'un classifieur de sentiments DistilBERT.
 Le modèle est sauvegardé dans le dossier ./model.
 """
 import os
+
 from datasets import load_dataset
 from transformers import (
     DistilBertForSequenceClassification,
