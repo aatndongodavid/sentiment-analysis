@@ -45,7 +45,7 @@ def main():
 
     tokenizer, model = load_model("model")
 
-    test_dataset = load_dataset("imdb", split="test[:1000]")
+    test_dataset = load_dataset("stanfordnlp/imdb", split="test[:1000]")
     X_test = test_dataset["text"]
     y_test = test_dataset["label"]
 
@@ -58,7 +58,8 @@ def main():
 
     if accuracy < args.threshold:
         raise SystemExit(
-            f"Accuracy {accuracy:.4f} inférieure au seuil {args.threshold}. Pipeline arrêté."
+            f"Accuracy {accuracy:.4f} inférieure au seuil "
+            f"{args.threshold}. Pipeline arrêté."
         )
 
 
