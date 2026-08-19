@@ -1,13 +1,10 @@
-"""
-Tests pour le module d'évaluation.
-On vérifie les fonctions utilitaires et le seuil.
-"""
 import os
 import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
 import evaluate
+
 
 def test_predict_batch_shape():
     # Test de la forme de la sortie (sans chargement réel du modèle)
