@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.Python
+env/
+venv/
+*.egg-info/
+dist/
+build/
+
+# Modèles et données locales
+model/
+results/
+logs/
+*.jsonl
+
+# IDE
+.vscode/
+.idea/
+.DS_Store
+
+# Fichiers d'environnement
+.env

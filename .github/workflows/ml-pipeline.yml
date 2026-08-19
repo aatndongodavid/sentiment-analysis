@@ -1,0 +1,95 @@
+name: ML Pipeline (Statique + Inference API)
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+permissions:
+  contents: write  # nécessaire pour le déploiement GitHub Pages
+
+env:
+  PYTHON_VERSION: "3.10"
+  HF_USERNAME: ${{ secrets.HF_USERNAME }}
+  HF_TOKEN: ${{ secrets.HF_TOKEN }}
+
+jobs:
+  # ── Job 1 : Lint, formatage et tests ───────────────────────────────
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements-dev.txt
+          pip install pytest black ruff
+
+      - name: Lint with ruff
+        run: ruff check src tests
+
+      - name: Format check with black
+        run: black --check src tests
+
+      - name: Run unit tests
+        run: pytest tests
+
+  # ── Job 2 : Entraînement, évaluation et publication du modèle ──────
+  train:
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements-dev.txt
+
+      - name: Train DistilBERT model
+        run: python src/train.py
+
+      - name: Evaluate model
+        run: python src/evaluate.py --threshold 0.85
+
+      - name: Upload model to Hugging Face Hub
+        run: |
+          python -c "
+          from huggingface_hub import HfApi
+          api = HfApi()
+          api.upload_folder(
+              folder_path='model',
+              repo_id='${{ secrets.HF_USERNAME }}/sentiment-model',
+              repo_type='model',
+              token='${{ secrets.HF_TOKEN }}',
+              commit_message='New model version from GitHub Actions'
+          )
+          "
+
+  # ── Job 3 : Déploiement du frontend sur GitHub Pages ───────────────
+  deploy-frontend:
+    needs: train
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./frontend
+          publish_branch: gh-pages
