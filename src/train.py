@@ -17,7 +17,7 @@ SAMPLE_SIZE = 5000  # 5000 exemples pour rester rapide
 
 def main():
     # Chargement du dataset IMDB
-    dataset = load_dataset("stanfordnlp/imdb", split=f"train[:{SAMPLE_SIZE}]")
+    test_dataset = load_dataset("stanfordnlp/imdb", split="test[:1000]")
     tokenizer = DistilBertTokenizer.from_pretrained(MODEL_NAME)
 
     def tokenize_function(examples):
