@@ -6,6 +6,8 @@ import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
+
 def test_train_importable():
     import train
+
     assert hasattr(train, "main")
