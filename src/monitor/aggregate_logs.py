@@ -19,9 +19,6 @@ def main():
         "Pour activer le monitoring, intégrez un stockage de logs "
         "(ex: base de données, fichier distant)."
     )
-    # Exemple d'agrégation future :
-    # logs = fetch_logs_from_somewhere()
-    # upload_csv_to_dataset(logs)
 
 
 if __name__ == "__main__":
