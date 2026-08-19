@@ -7,10 +7,10 @@ import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
-import evaluate
-
 
 def test_predict_batch_shape():
+    import evaluate
+
     class FakeTokenizer:
         def __call__(self, texts, **kwargs):
             import torch
