@@ -1,13 +1,10 @@
-"""
-Évalue le modèle entraîné sur un échantillon du jeu de test IMDB.
-Arrête le pipeline si l'accuracy est inférieure au seuil donné.
-"""
 import argparse
-from datasets import load_dataset
-from transformers import DistilBertTokenizer, DistilBertForSequenceClassification
-import torch
-from sklearn.metrics import accuracy_score, f1_score
+
 import numpy as np
+import torch
+from datasets import load_dataset
+from sklearn.metrics import accuracy_score, f1_score
+from transformers import DistilBertForSequenceClassification, DistilBertTokenizer
 
 def load_model(model_dir):
     tokenizer = DistilBertTokenizer.from_pretrained(model_dir)
