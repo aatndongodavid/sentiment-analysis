@@ -7,9 +7,6 @@ et les agréger dans un dataset Hugging Face.
 Actuellement, il sert de placeholder pour une future évolution.
 """
 import os
-import json
-from datetime import datetime
-from huggingface_hub import HfApi, create_repo
 
 HF_USERNAME = os.getenv("HF_USERNAME")
 HF_TOKEN = os.getenv("HF_TOKEN")
