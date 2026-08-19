@@ -6,6 +6,7 @@ from datasets import load_dataset
 from sklearn.metrics import accuracy_score, f1_score
 from transformers import DistilBertForSequenceClassification, DistilBertTokenizer
 
+
 def load_model(model_dir):
     tokenizer = DistilBertTokenizer.from_pretrained(model_dir)
     model = DistilBertForSequenceClassification.from_pretrained(model_dir)
