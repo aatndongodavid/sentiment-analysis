@@ -12,12 +12,17 @@ HF_USERNAME = os.getenv("HF_USERNAME")
 HF_TOKEN = os.getenv("HF_TOKEN")
 LOGS_REPO_ID = f"{HF_USERNAME}/sentiment-logs"
 
+
 def main():
     print("Monitoring désactivé dans cette version (API serverless).")
-    print("Pour activer le monitoring, intégrez un stockage de logs (ex: base de données, fichier distant).")
+    print(
+        "Pour activer le monitoring, intégrez un stockage de logs "
+        "(ex: base de données, fichier distant)."
+    )
     # Exemple d'agrégation future :
     # logs = fetch_logs_from_somewhere()
     # upload_csv_to_dataset(logs)
+
 
 if __name__ == "__main__":
     main()
