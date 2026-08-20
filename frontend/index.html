@@ -1,20 +1,151 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analyse de Sentiments</title>
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Analyseur de Sentiments — DistilBERT / IMDB</title>
+<meta name="description" content="Instrument d'analyse de sentiments en temps réel, propulsé par un DistilBERT entraîné sur IMDB et servi via l'API d'inférence Hugging Face.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <h1>Analyse de Sentiments</h1>
-        <p>Entrez une critique de film en anglais :</p>
-        <textarea id="text-input" rows="4" cols="50" placeholder="This movie was absolutely fantastic!"></textarea>
-        <br>
-        <button id="analyze-btn">Analyser</button>
-        <div id="result" class="result"></div>
+
+<div class="page">
+
+  <header class="masthead">
+    <p class="eyebrow">Module 01 — DistilBERT · IMDB · MLOps gratuit</p>
+    <h1>Analyseur de sentiments</h1>
+    <p class="subhead">Écrivez une critique de film <strong>en anglais</strong>. L'aiguille lit la polarité émotionnelle du texte, calculée par un modèle DistilBERT affiné sur 25&nbsp;000 critiques IMDB.</p>
+  </header>
+
+  <main class="instrument" id="instrument">
+
+    <div class="instrument__glow" aria-hidden="true"></div>
+
+    <div class="instrument__grid">
+
+      <!-- Colonne gauche : saisie -->
+      <div class="input-bay">
+        <label class="bay-label" for="text-input">
+          <span>Texte à analyser</span>
+          <span class="char-count" id="char-count">0 caractère</span>
+        </label>
+
+        <textarea
+          id="text-input"
+          rows="6"
+          placeholder="This movie was absolutely fantastic — the acting, the score, everything about it worked."
+          spellcheck="false"
+        ></textarea>
+
+        <div class="examples" id="examples" aria-label="Exemples de textes">
+          <span class="examples__label">Essayer&nbsp;:</span>
+          <button type="button" class="chip" data-text="This movie was a masterpiece. Every scene felt deliberate, the performances were stunning, and I left the theater speechless.">Chef-d'œuvre</button>
+          <button type="button" class="chip" data-text="A complete waste of time. The plot made no sense and the acting was painfully wooden throughout.">Catastrophe</button>
+          <button type="button" class="chip" data-text="It's fine, I guess. Some good moments, some slow parts. Not something I'd watch again but not terrible either.">Mitigé</button>
+          <button type="button" class="chip" data-text="Oh sure, another three-hour superhero sequel. Truly what cinema was missing.">Sarcasme</button>
+        </div>
+
+        <div class="controls">
+          <button id="analyze-btn" class="btn-analyze" type="button">
+            <span class="btn-analyze__label">Analyser</span>
+            <span class="btn-analyze__hint">⌘/Ctrl + Entrée</span>
+          </button>
+          <button id="clear-btn" class="btn-ghost" type="button">Effacer</button>
+        </div>
+
+        <details class="advanced">
+          <summary>Paramètres avancés</summary>
+          <label class="advanced__field">
+            <span>Token Hugging Face (optionnel, non enregistré)</span>
+            <input type="password" id="hf-token" placeholder="hf_xxxxxxxxxxxxxxxxxxxx" autocomplete="off">
+          </label>
+          <p class="advanced__hint">Utile si vous dépassez le quota gratuit de l'API d'inférence serverless (~1000 requêtes/jour/modèle). Le token reste en mémoire le temps de la session, jamais transmis ailleurs qu'à l'API Hugging Face.</p>
+        </details>
+      </div>
+
+      <!-- Colonne droite : cadran -->
+      <div class="readout-bay">
+        <div class="gauge-wrap">
+          <svg id="gauge" viewBox="0 0 300 190" aria-hidden="true">
+            <defs>
+              <linearGradient id="arc-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#ff6b57"/>
+                <stop offset="50%" stop-color="#5a5f6b"/>
+                <stop offset="100%" stop-color="#35d68f"/>
+              </linearGradient>
+            </defs>
+            <path id="gauge-arc" d="M 30 170 A 120 120 0 0 1 270 170" fill="none" stroke="url(#arc-gradient)" stroke-width="10" stroke-linecap="round" opacity="0.35"/>
+            <g id="gauge-ticks"></g>
+            <g id="gauge-needle" style="transform-origin: 150px 170px;">
+              <line x1="150" y1="170" x2="150" y2="58" stroke="#f4f1e8" stroke-width="3" stroke-linecap="round"/>
+              <circle cx="150" cy="170" r="7" fill="#f4f1e8"/>
+              <circle cx="150" cy="170" r="3" fill="#12141a"/>
+            </g>
+            <text x="30" y="188" class="gauge-label gauge-label--neg">NÉGATIF</text>
+            <text x="270" y="188" class="gauge-label gauge-label--pos" text-anchor="end">POSITIF</text>
+          </svg>
+        </div>
+
+        <div class="leds" id="leds">
+          <div class="led led--neg" data-led="neg"><span class="led__dot"></span>Négatif</div>
+          <div class="led led--wait" data-led="wait"><span class="led__dot"></span>En attente</div>
+          <div class="led led--pos" data-led="pos"><span class="led__dot"></span>Positif</div>
+        </div>
+
+        <div class="readout" id="readout">
+          <p class="readout__status" id="readout-status">En attente d'un texte à analyser.</p>
+          <p class="readout__confidence" id="readout-confidence" hidden>
+            Confiance <span id="confidence-value">—</span>
+          </p>
+        </div>
+
+        <button id="copy-btn" class="btn-ghost btn-ghost--small" type="button" hidden>Copier le résultat</button>
+      </div>
+
     </div>
-    <script src="script.js"></script>
+  </main>
+
+  <!-- Statistiques de session -->
+  <section class="stats" aria-label="Statistiques de session">
+    <div class="stat">
+      <span class="stat__value" id="stat-total">0</span>
+      <span class="stat__label">Analyses</span>
+    </div>
+    <div class="stat">
+      <span class="stat__value" id="stat-positive">0%</span>
+      <span class="stat__label">Positif</span>
+    </div>
+    <div class="stat">
+      <span class="stat__value" id="stat-negative">0%</span>
+      <span class="stat__label">Négatif</span>
+    </div>
+    <div class="stat">
+      <span class="stat__value" id="stat-confidence">—</span>
+      <span class="stat__label">Confiance moy.</span>
+    </div>
+  </section>
+
+  <!-- Bande d'historique -->
+  <section class="tape-section">
+    <div class="tape-header">
+      <h2>Journal de session</h2>
+      <button id="clear-history-btn" class="btn-ghost btn-ghost--small">Vider le journal</button>
+    </div>
+    <div class="tape" id="tape">
+      <p class="tape__empty" id="tape-empty">Vos analyses apparaîtront ici, comme un ticker de laboratoire.</p>
+    </div>
+  </section>
+
+  <footer class="masthead-footer">
+    <p>Servi par l'API d'inférence Hugging Face (gratuite, ~1000 req/jour). Le premier appel peut être lent le temps que le modèle se réveille.</p>
+    <p class="masthead-footer__meta">DistilBERT · fine-tuné sur IMDB · pipeline entraîné via GitHub Actions</p>
+  </footer>
+
+</div>
+
+<script src="script.js"></script>
 </body>
 </html>
